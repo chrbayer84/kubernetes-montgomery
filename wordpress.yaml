@@ -1,0 +1,69 @@
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: wordpress
+  namespace: wordpress
+spec:
+  selector:
+    matchLabels:
+      app: wordpress
+  replicas: 2 # tells deployment to run 2 pods matching the template
+  template: # create pods using pod definition in this template
+    metadata:
+      # unlike pod-nginx.yaml, the name is not included in the meta data as a unique name is
+      # generated from the deployment name
+      labels:
+        app: wordpress
+    spec:
+      containers:
+      - name: wordpress
+        image: wordpress:fpm-alpine
+        ports:
+        - containerPort: 9000
+        volumeMounts:
+        - mountPath: "/var/www/html"
+          name: wordpress
+        - mountPath: "/entrypoint"
+          name: wordpress-conf
+        env:
+        - name: WORDPRESS_DB_HOST
+          value: mysql-0.mysql:3306
+        - name: WORDPRESS_DB_USER
+          value: wordpress
+        - name: WORDPRESS_DB_PASSWORD
+          value: wordpress
+        command:
+        - bash
+        - /entrypoint/entrypoint.sh
+      volumes:
+      - name: wordpress
+        persistentVolumeClaim:
+          claimName: pvc-wordpress
+      - name: wordpress-conf
+        configMap:
+          name: configmap-wordpress
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configmap-wordpress
+  namespace: wordpress
+data:
+  entrypoint.sh: |-
+    #!/bin/bash
+    sed 's/\/\/ If we'"'"'re behind a proxy server and using HTTPS, we need to alert Wordpress of that fact/define\('"'"'WP_ALLOW_MULTISITE'"'"', true\);/g' /usr/local/bin/docker-entrypoint.sh
+    docker-entrypoint.sh "$@"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: wordpress
+  name: wordpress
+  namespace: wordpress
+spec:
+  ports:
+  - targetPort: 9000
+    port: 9000
+  selector:
+    app: wordpress
