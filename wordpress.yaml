@@ -35,6 +35,7 @@ spec:
         command:
         - bash
         - /entrypoint/entrypoint.sh
+#        - php-fpm
       volumes:
       - name: wordpress
         persistentVolumeClaim:
@@ -51,8 +52,8 @@ metadata:
 data:
   entrypoint.sh: |-
     #!/bin/bash
-    sed 's/\/\/ If we'"'"'re behind a proxy server and using HTTPS, we need to alert Wordpress of that fact/define\('"'"'WP_ALLOW_MULTISITE'"'"', true\);/g' /usr/local/bin/docker-entrypoint.sh
-    docker-entrypoint.sh "$@"
+    sed 's/\/\/ If we'"'"'re behind a proxy server and using HTTPS, we need to alert Wordpress of that fact/define\('"'"'WP_ALLOW_MULTISITE'"'"', true\);/g' -i /usr/local/bin/docker-entrypoint.sh
+    docker-entrypoint.sh php-fpm
 ---
 apiVersion: v1
 kind: Service
