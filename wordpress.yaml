@@ -52,7 +52,9 @@ metadata:
 data:
   entrypoint.sh: |-
     #!/bin/bash
-    sed 's/\/\/ If we'"'"'re behind a proxy server and using HTTPS, we need to alert Wordpress of that fact/define\('"'"'WP_ALLOW_MULTISITE'"'"', true\);/g' -i /usr/local/bin/docker-entrypoint.sh
+    sed 's/pm.max_children = 16/pm.max_children = 16/g' -i /usr/local/etc/php-fpm.d/www.conf
+    sed 's/pm.start_servers = 8/pm.start_servers = 8/g' -i /usr/local/etc/php-fpm.d/www.conf
+    sed 's/\/\/ If we'"'"'re behind a proxy server and using HTTPS, we need to alert Wordpress of that fact/define\('"'"'WP_ALLOW_REPAIR'"'"', true\);\ndefine\('"'"'WP_ALLOW_MULTISITE'"'"', true\);\ndefine\('"'"'MULTISITE'"'"', true\);\ndefine\('"'"'SUBDOMAIN_INSTALL'"'"', false\);\ndefine\('"'"'DOMAIN_CURRENT_SITE'"'"', '"'"'120montgomery.ddns.net'"'"'\);\ndefine\('"'"'PATH_CURRENT_SITE'"'"', '"'"'\/'"'"'\);\ndefine\('"'"'SITE_ID_CURRENT_SITE'"'"', 1\);\ndefine\('"'"'BLOG_ID_CURRENT_SITE'"'"', 1\);/g' -i /usr/local/bin/docker-entrypoint.sh
     docker-entrypoint.sh php-fpm
 ---
 apiVersion: v1

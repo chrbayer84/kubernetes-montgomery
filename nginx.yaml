@@ -40,14 +40,79 @@ metadata:
   namespace: wordpress
 data:
   site.conf: |-
-    server {
-      index index.php index.html;
-      server_name wordpress;
-      error_log  /dev/stdout;
-      access_log /dev/stdout;
-      root /var/www/html;
+    #    server {
+    #      index index.php index.html;
+    #      server_name wordpress;
+    #      error_log  /dev/stdout;
+    #      access_log /dev/stdout;
+    #      root /var/www/html;
+    #
+    #      location ~ \.php$ {
+    #          try_files $uri =404;
+    #          fastcgi_split_path_info ^(.+\.php)(/.+)$;
+    #          fastcgi_pass wordpress:9000;
+    #          fastcgi_index index.php;
+    #          include fastcgi_params;
+    #          fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    #          fastcgi_param PATH_INFO $fastcgi_path_info;
+    #
+    #          rewrite ^/([_0-9a-zA-Z-]+/)?wp-admin$ /$1wp-admin/ redirect;
+    #          if (-e $request_filename){
+    #            rewrite ^/([_0-9a-zA-Z-]+/)?(wp-(content|admin|includes).*) /$2 break;
+    #          }
+    #          rewrite ^/([_0-9a-zA-Z-]+/)?(.*\.php)$ /$2 break;
+    #          rewrite ^(.*)$ /index.php break;
+    #      }
+    #    }
+    map $uri $blogname{
+        ~^(?P<blogpath>/[^/]+/)files/(.*)       $blogpath ;
+    }
 
-      location ~ \.php$ {
+    map $blogname $blogid{
+        default -999;
+
+        #Ref: http://wordpress.org/extend/plugins/nginx-helper/
+        #include /var/www/wordpress/wp-content/plugins/nginx-helper/map.conf ;
+    }
+    server {
+        index index.php index.html;
+        server_name wordpress;
+        error_log  /dev/stdout;
+        access_log /dev/stdout;
+        root /var/www/html;
+        client_max_body_size 32M;
+
+        location ~ ^(/[^/]+/)?files/(.+) {
+            try_files /wp-content/blogs.dir/$blogid/files/$2 /wp-includes/ms-files.php?file=$2 ;
+            #access_log off;     log_not_found off;
+            expires max;
+        }
+
+        #avoid php readfile()
+        location ^~ /blogs.dir {
+            internal;
+            alias /var/www/html/wp-content/blogs.dir ;
+            #access_log off;     log_not_found off;
+            expires max;
+        }
+
+        if (!-e $request_filename) {
+            rewrite /wp-admin$ $scheme://$host$uri/ permanent;
+            rewrite ^(/[^/]+)?(/wp-.*) $2 last;
+            rewrite ^(/[^/]+)?(/.*\.php) $2 last;
+        }
+
+        location / {
+            try_files $uri $uri/ /index.php?$args ;
+        }
+
+        #location ~ \.php$ {
+        #    fastcgi_pass php;
+        #}
+
+        #add some rules for static content expiry-headers here
+
+        location ~ \.php$ {
           try_files $uri =404;
           fastcgi_split_path_info ^(.+\.php)(/.+)$;
           fastcgi_pass wordpress:9000;
@@ -55,7 +120,8 @@ data:
           include fastcgi_params;
           fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
           fastcgi_param PATH_INFO $fastcgi_path_info;
-      }
+          fastcgi_param PHP_VALUE "upload_max_filesize=32M \n post_max_size=32M \n max_execution_time = 10000000";
+        }
     }
 ---
 apiVersion: v1
