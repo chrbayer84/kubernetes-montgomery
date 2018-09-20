@@ -1,0 +1,22 @@
+apiVersion: batch/v1beta1
+  kind: CronJob
+  metadata:
+    name: nestwatch
+    namespace: monitoring
+  spec:
+    schedule: "*/5 * * * *"
+    jobTemplate:
+      spec:
+        template:
+          spec:
+            containers:
+            - name: nestwatch
+              image: llano/nestwatch
+            restartPolicy: OnFailure
+        volumeMounts:
+        - mountPath: "/etc/nginx/conf.d"
+          name: nestwatch-conf
+      volumes:
+        - name: nginestwatchnx-conf
+          configMap:
+            name: configmap-nestwatch

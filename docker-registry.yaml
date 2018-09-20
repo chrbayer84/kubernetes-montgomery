@@ -1,46 +1,35 @@
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: heapster
-  namespace: kube-system
----
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: heapster
+  name: registry
   namespace: kube-system
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        task: monitoring
-        k8s-app: heapster
+        task: registry
+        k8s-app: registry
     spec:
-      serviceAccountName: heapster
       containers:
-      - name: heapster
-        image: k8s.gcr.io/heapster-amd64:v1.5.3
+      - name: registry
+        image: registry
         imagePullPolicy: IfNotPresent
-        command:
-        - /heapster
-        - --source=kubernetes:https://kubernetes.default
-        - --sink=influxdb:http://influxdb.monitoring.svc:8086
 ---
 apiVersion: v1
 kind: Service
 metadata:
   labels:
-    task: monitoring
+    task: registry
     # For use as a Cluster add-on (https://github.com/kubernetes/kubernetes/tree/master/cluster/addons)
     # If you are NOT using this as an addon, you should comment out this line.
     kubernetes.io/cluster-service: 'true'
-    kubernetes.io/name: Heapster
-  name: heapster
+    kubernetes.io/name: Registry
+  name: registry
   namespace: kube-system
 spec:
   ports:
   - port: 80
-    targetPort: 8082
+    targetPort: 5000
   selector:
-    k8s-app: heapster
+    k8s-app: registry

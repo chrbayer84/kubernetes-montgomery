@@ -40,30 +40,6 @@ metadata:
   namespace: wordpress
 data:
   site.conf: |-
-    #    server {
-    #      index index.php index.html;
-    #      server_name wordpress;
-    #      error_log  /dev/stdout;
-    #      access_log /dev/stdout;
-    #      root /var/www/html;
-    #
-    #      location ~ \.php$ {
-    #          try_files $uri =404;
-    #          fastcgi_split_path_info ^(.+\.php)(/.+)$;
-    #          fastcgi_pass wordpress:9000;
-    #          fastcgi_index index.php;
-    #          include fastcgi_params;
-    #          fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-    #          fastcgi_param PATH_INFO $fastcgi_path_info;
-    #
-    #          rewrite ^/([_0-9a-zA-Z-]+/)?wp-admin$ /$1wp-admin/ redirect;
-    #          if (-e $request_filename){
-    #            rewrite ^/([_0-9a-zA-Z-]+/)?(wp-(content|admin|includes).*) /$2 break;
-    #          }
-    #          rewrite ^/([_0-9a-zA-Z-]+/)?(.*\.php)$ /$2 break;
-    #          rewrite ^(.*)$ /index.php break;
-    #      }
-    #    }
     map $uri $blogname{
         ~^(?P<blogpath>/[^/]+/)files/(.*)       $blogpath ;
     }
@@ -113,14 +89,15 @@ data:
         #add some rules for static content expiry-headers here
 
         location ~ \.php$ {
-          try_files $uri =404;
+          fastcgi_read_timeout 600s;
+          try_files $uri = 404;
           fastcgi_split_path_info ^(.+\.php)(/.+)$;
           fastcgi_pass wordpress:9000;
           fastcgi_index index.php;
           include fastcgi_params;
           fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
           fastcgi_param PATH_INFO $fastcgi_path_info;
-          fastcgi_param PHP_VALUE "upload_max_filesize=32M \n post_max_size=32M \n max_execution_time = 10000000";
+          fastcgi_param PHP_VALUE "upload_max_filesize=32M \n post_max_size=32M;
         }
     }
 ---
