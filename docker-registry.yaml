@@ -12,7 +12,7 @@ spec:
         k8s-app: registry
     spec:
       containers:
-      - name: registry
+      - name: registry:2
         image: registry
         imagePullPolicy: IfNotPresent
 ---

@@ -1,4 +1,4 @@
-FROM cli-alpine
+FROM alpine
 
 RUN apk add --update \
     git \
