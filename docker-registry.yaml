@@ -12,8 +12,8 @@ spec:
         k8s-app: registry
     spec:
       containers:
-      - name: registry:2
-        image: registry
+      - name: registry
+        image: registry:2
         imagePullPolicy: IfNotPresent
 ---
 apiVersion: v1
@@ -28,8 +28,10 @@ metadata:
   name: registry
   namespace: kube-system
 spec:
+  type: NodePort
   ports:
-  - port: 80
+  - nodePort: 32050
+    port: 80
     targetPort: 5000
   selector:
     k8s-app: registry
