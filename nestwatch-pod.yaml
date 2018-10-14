@@ -1,62 +1,34 @@
-#apiVersion: batch/v1beta1
-#kind: CronJob
-#metadata:
-#  name: nestwatch
-#  namespace: monitoring
-#  labels:
-#    app: nestwatch
-#spec:
-#  successfulJobsHistoryLimit: 2
-#  failedJobsHistoryLimit: 3
-#  schedule: "*/5 * * * *"
-#  jobTemplate:
-#    spec:
-#      template:
-#        spec:
-#          #  restartPolicy: OnFailure
-#          restartPolicy: Never
-#          containers:
-#          - name: nestwatch
-#            image: llano:32050/nestwatch:0.1
-#            command:
-#            - bash
-#            - "-c"
-#            - |
-#              ls /app
-#              ls /app/src
-#              /app/nestwatch
-#            volumeMounts:
-#            - mountPath: "/app/nestwatch.conf"
-#              name: nestwatch-conf
-#              readOnly: true
-#          volumes:
-#          - name: nestwatch-conf
-#            secret:
-#              secretName: secret-nestwatch
-apiVersion: v1
-kind: Pod
+apiVersion: batch/v1beta1
+kind: CronJob
 metadata:
   name: nestwatch
   namespace: monitoring
   labels:
     app: nestwatch
 spec:
-  #  restartPolicy: OnFailure
-  restartPolicy: Never
-  containers:
-  - name: nestwatch
-    image: llano:32050/nestwatch:0.1
-    command:
-    - /app/nestwatch
-    args: ["-c", "/app/conf/nestwatch.conf"]
-    volumeMounts:
-    - mountPath: "/app/conf"
-      name: nestwatch-conf
-      readOnly: true
-  volumes:
-  - name: nestwatch-conf
-    secret:
-      secretName: secret-nestwatch
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 3
+  schedule: "*/2 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          #  restartPolicy: OnFailure
+          restartPolicy: Never
+          containers:
+          - name: nestwatch
+            image: llano:32050/nestwatch:latest
+            command:
+            - /app/nestwatch
+            args: ["-c", "/app/conf/nestwatch.conf"]
+            volumeMounts:
+            - mountPath: "/app/conf"
+              name: nestwatch-conf
+              readOnly: true
+          volumes:
+          - name: nestwatch-conf
+            secret:
+              secretName: secret-nestwatch
 ---
 apiVersion: v1
 kind: Pod
@@ -81,7 +53,7 @@ spec:
     image: gcr.io/kaniko-project/executor
     args: ["--dockerfile=/workspace/source/nestwatch/Dockerfile",
            "--context=/workspace/source/nestwatch",
-           "--destination=registry.kube-system/nestwatch:0.1",
+           "--destination=registry.kube-system/nestwatch:latest",
            "--insecure"
           ]
     volumeMounts:
