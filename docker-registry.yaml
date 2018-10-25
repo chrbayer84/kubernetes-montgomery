@@ -15,6 +15,13 @@ spec:
       - name: registry
         image: registry:2
         imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - mountPath: "/var/lib/registry"
+          name: docker-registry
+      volumes:
+      - name: docker-registry
+        persistentVolumeClaim:
+          claimName: pvc-docker-registry
 ---
 apiVersion: v1
 kind: Service
@@ -35,3 +42,32 @@ spec:
     targetPort: 5000
   selector:
     k8s-app: registry
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-docker-registry
+  namespace: kube-system
+spec:
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    path: /srv/k8s/docker-registry
+    server: llano
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc-docker-registry
+  namespace: kube-system
+spec:
+  accessModes:
+  - ReadWriteMany
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 10Gi

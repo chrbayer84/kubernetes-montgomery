@@ -1,34 +1,32 @@
-apiVersion: batch/v1beta1
-kind: CronJob
-metadata:
-  name: nestwatch
-  namespace: monitoring
-  labels:
-    app: nestwatch
-spec:
-  successfulJobsHistoryLimit: 2
-  failedJobsHistoryLimit: 3
-  schedule: "*/2 * * * *"
-  jobTemplate:
-    spec:
-      template:
-        spec:
-          #  restartPolicy: OnFailure
-          restartPolicy: Never
-          containers:
-          - name: nestwatch
-            image: llano:32050/nestwatch:latest
-            command:
-            - /app/nestwatch
-            args: ["-c", "/app/conf/nestwatch.conf"]
-            volumeMounts:
-            - mountPath: "/app/conf"
-              name: nestwatch-conf
-              readOnly: true
-          volumes:
-          - name: nestwatch-conf
-            secret:
-              secretName: secret-nestwatch
+#apiVersion: apps/v1
+#kind: Deployment
+#metadata:
+#  name: nestwatch
+#  namespace: monitoring
+#spec:
+#  selector:
+#    matchLabels:
+#      app: nestwatch
+#  replicas: 1
+#  template:
+#    metadata:
+#      labels:
+#        app: nestwatch
+#    spec:
+#      containers:
+#      - name: nestwatch
+#        image: llano:32050/nestwatch:latest
+#        command:
+#        - /app/nestwatch
+#        args: ["-c", "/app/conf/nestwatch.conf"]
+#        volumeMounts:
+#        - mountPath: "/app/conf"
+#          name: nestwatch-conf
+#          readOnly: true
+#      volumes:
+#      - name: nestwatch-conf
+#        secret:
+#          secretName: secret-nestwatch
 ---
 apiVersion: v1
 kind: Pod
@@ -85,11 +83,3 @@ data:
             "auths": {
             }
     }
-#    {
-#            "auths": {
-#                    "http:/registry.kube-system/": {
-#                            "auth": "XXXXXXXXXXXXX",
-#                            "email": "x.y@gmail.com"
-#                    }
-#            }
-#    }
