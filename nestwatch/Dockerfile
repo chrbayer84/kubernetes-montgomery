@@ -5,8 +5,8 @@ RUN apk add --update \
     composer \
     php7 \
     php7-curl \
-    cron \
   && rm -rf /var/cache/apk/*
+#    cron \
 
 RUN git clone https://github.com/peckrob/nest-watch /app && \
     cd /app/src && \
@@ -16,4 +16,4 @@ RUN crontab -l | { cat; echo "*/5 * * * * /app/nestwatch"; } | crontab -
 
 WORKDIR /app
 
-CMD ["cron", "-f"]
+CMD ["/usr/sbin/crond", "-f", "-d", "0"]
