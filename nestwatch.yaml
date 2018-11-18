@@ -1,32 +1,32 @@
-#apiVersion: apps/v1
-#kind: Deployment
-#metadata:
-#  name: nestwatch
-#  namespace: monitoring
-#spec:
-#  selector:
-#    matchLabels:
-#      app: nestwatch
-#  replicas: 1
-#  template:
-#    metadata:
-#      labels:
-#        app: nestwatch
-#    spec:
-#      containers:
-#      - name: nestwatch
-#        image: llano:32050/nestwatch:latest
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nestwatch
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: nestwatch
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nestwatch
+    spec:
+      containers:
+      - name: nestwatch
+        image: llano:32050/nestwatch:latest
 #        command:
 #        - /app/nestwatch
 #        args: ["-c", "/app/conf/nestwatch.conf"]
-#        volumeMounts:
-#        - mountPath: "/app/conf"
-#          name: nestwatch-conf
-#          readOnly: true
-#      volumes:
-#      - name: nestwatch-conf
-#        secret:
-#          secretName: secret-nestwatch
+        volumeMounts:
+        - mountPath: "/app/conf"
+          name: nestwatch-conf
+          readOnly: true
+      volumes:
+      - name: nestwatch-conf
+        secret:
+          secretName: secret-nestwatch
 ---
 apiVersion: v1
 kind: Pod
