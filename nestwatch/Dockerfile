@@ -5,8 +5,8 @@ RUN apk add --update \
     composer \
     php7 \
     php7-curl \
+    curl \
   && rm -rf /var/cache/apk/*
-#    cron \
 
 RUN git clone https://github.com/peckrob/nest-watch /app && \
     cd /app/src && \
