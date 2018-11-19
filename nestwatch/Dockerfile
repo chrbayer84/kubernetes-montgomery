@@ -12,9 +12,8 @@ RUN git clone https://github.com/peckrob/nest-watch /app && \
     cd /app/src && \
     composer install
 
-RUN crontab -l | { cat; echo "*/5 * * * * /app/nestwatch-alpine.sh -c /app/conf/nestwatch.conf"; } | crontab -
-ADD nestwatch-alpine.sh /app/
-RUN chmod 755 /app/nestwatch-alpine.sh
+RUN crontab -l | { cat; echo "*/5 * * * * /app/nestwatch.sh -c /app/conf/nestwatch.conf"; } | crontab -
+ADD php.ini /etc/php7/
 
 WORKDIR /app
 
