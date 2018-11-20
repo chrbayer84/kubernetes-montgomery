@@ -16,9 +16,6 @@ spec:
       containers:
       - name: nestwatch
         image: llano:32050/nestwatch:latest
-#        command:
-#        - /app/nestwatch
-#        args: ["-c", "/app/conf/nestwatch.conf"]
         volumeMounts:
         - mountPath: "/app/conf"
           name: nestwatch-conf
@@ -48,7 +45,7 @@ spec:
       mountPath: /git
   containers:
   - name: kaniko
-    image: gcr.io/kaniko-project/executor
+    image: gcr.io/kaniko-project/executor:debug-v0.6.0
     args: ["--dockerfile=/workspace/source/nestwatch/Dockerfile",
            "--context=/workspace/source/nestwatch",
            "--destination=registry.kube-system/nestwatch:latest",
