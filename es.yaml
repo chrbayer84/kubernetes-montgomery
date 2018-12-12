@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: elasticsearch
+  namespace: monitoring
+  labels:
+    component: elasticsearch
+    role: master
+spec:
+  selector:
+    matchLabels:
+      component: elasticsearch
+      role: master
+  serviceName: elasticsearch-master
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: elasticsearch
+        role: master
+    spec:
+      initContainers:
+      - name: init-sysctl
+        image: busybox:1.27.2
+        command:
+        - sysctl
+        - -w
+        - vm.max_map_count=262144
+        securityContext:
+          privileged: true
+      containers:
+      - name: elasticsearch
+        image: docker.elastic.co/elasticsearch/elasticsearch:6.5.3
+        env:
+        - name: "cluster.name"
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        #- name: "bootstrap.memory_lock"
+        #  value: "true"
+        - name: ES_JAVA_OPTS
+          value: -Xms256m -Xmx256m
+        resources:
+          requests:
+            cpu: 0.25
+          limits:
+            cpu: 1
+        ports:
+        - containerPort: 9200
+          name: http
+        #livenessProbe:
+        #  tcpSocket:
+        #    port: http
+        #  initialDelaySeconds: 120
+        #  periodSeconds: 10
+        #readinessProbe:
+        #  httpGet:
+        #    path: /_cluster/health
+        #    port: http
+        #  initialDelaySeconds: 20
+        #  timeoutSeconds: 5
+        volumeMounts:
+        - name: es-storage
+          mountPath: /usr/share/elasticsearch/data
+      volumes:
+      - name: es-storage
+        persistentVolumeClaim:
+          claimName: pvc-es
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-es
+  namespace: monitoring
+spec:
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    path: /srv/k8s/es
+    server: llano
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc-es
+  namespace: monitoring
+spec:
+  accessModes:
+  - ReadWriteMany
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch-master
+  namespace: monitoring
+  labels:
+    component: elasticsearch
+    role: master
+spec:
+  ports:
+  - port: 9200
+    name: http
+  clusterIP: None
+  selector:
+    component: elasticsearch
+    role: master
