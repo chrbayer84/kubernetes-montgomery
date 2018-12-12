@@ -11,7 +11,7 @@ spec:
     matchLabels:
       component: elasticsearch
       role: master
-  serviceName: elasticsearch-master
+  serviceName: elasticsearch
   replicas: 1
   template:
     metadata:
@@ -48,11 +48,11 @@ spec:
         ports:
         - containerPort: 9200
           name: http
-        #livenessProbe:
-        #  tcpSocket:
-        #    port: http
-        #  initialDelaySeconds: 120
-        #  periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: http
+          initialDelaySeconds: 180
+          periodSeconds: 10
         #readinessProbe:
         #  httpGet:
         #    path: /_cluster/health
@@ -99,7 +99,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: elasticsearch-master
+  name: elasticsearch
   namespace: monitoring
   labels:
     component: elasticsearch
